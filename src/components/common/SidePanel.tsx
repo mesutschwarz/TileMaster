@@ -2,7 +2,6 @@ import React from 'react'
 import { useEditorStore } from '../../stores/editorStore'
 import { TilesExplorer } from '../Explorer/TilesExplorer'
 import { MapsExplorer } from '../Explorer/MapsExplorer'
-import { HealthPanel } from './HealthPanel'
 
 export const SidePanel: React.FC = () => {
     const { view } = useEditorStore()
@@ -18,7 +17,6 @@ export const SidePanel: React.FC = () => {
             <div className="flex-1 min-h-0 overflow-hidden">
                 {view === 'tile' ? <TilesExplorer /> : <MapsExplorer />}
             </div>
-            <HealthPanel />
         </div>
     )
 }

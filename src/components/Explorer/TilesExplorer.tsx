@@ -192,7 +192,7 @@ export const TilesExplorer: React.FC = () => {
     }, [contextMenu, clipboard, cutTile, copyTile, pasteTile, duplicateTile, clearTile, deleteTile])
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="h-full flex flex-col min-h-0 overflow-hidden">
             <input
                 type="file"
                 ref={fileInputRef}
@@ -210,36 +210,37 @@ export const TilesExplorer: React.FC = () => {
                 />
             )}
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col min-h-0 pr-1">
-                <div className="section-header sticky top-0 z-10 bg-transparent border-b-0 backdrop-blur-xl pb-2 pt-4 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]">
-                    <span className="text-xs font-black tracking-widest text-text-primary drop-shadow-md">TILES</span>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={createNewTile}
-                            className="p-1.5 rounded-lg transition-all action-button hover:bg-accent-primary/20 hover:text-accent-primary"
-                            title="Add Tile"
-                        >
-                            <Plus size={16} strokeWidth={2.5} />
-                        </button>
-                        <button
-                            onClick={handleCleanupTiles}
-                            className="p-1.5 rounded-lg transition-all action-button hover:bg-accent-secondary/20 hover:text-accent-secondary"
-                            title="Cleanup duplicates"
-                        >
-                            <Eraser size={16} strokeWidth={2.5} />
-                        </button>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="p-1.5 rounded-lg transition-all action-button hover:bg-accent-secondary/20 hover:text-accent-secondary"
-                            title="Import PNG"
-                        >
-                            <Upload size={16} strokeWidth={2.5} />
-                        </button>
-                    </div>
+            {/* Header */}
+            <div className="w-full flex items-center justify-between px-4 py-2 shrink-0 border-b border-ui-border-subtle/50 bg-bg-tertiary/40 backdrop-blur-md">
+                <span className="text-[11px] font-black tracking-widest text-text-primary">TILES</span>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={createNewTile}
+                        className="p-1.5 rounded-lg transition-all action-button hover:bg-accent-primary/20 hover:text-accent-primary"
+                        title="Add Tile"
+                    >
+                        <Plus size={14} strokeWidth={2.5} />
+                    </button>
+                    <button
+                        onClick={handleCleanupTiles}
+                        className="p-1.5 rounded-lg transition-all action-button hover:bg-accent-secondary/20 hover:text-accent-secondary"
+                        title="Cleanup duplicates"
+                    >
+                        <Eraser size={14} strokeWidth={2.5} />
+                    </button>
+                    <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-1.5 rounded-lg transition-all action-button hover:bg-accent-secondary/20 hover:text-accent-secondary"
+                        title="Import PNG"
+                    >
+                        <Upload size={14} strokeWidth={2.5} />
+                    </button>
                 </div>
+            </div>
 
-                <div className="p-4 pt-2">
+            {/* Scrollable tile grid */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
+                <div className="p-3">
                     <div
                         className="flex flex-wrap gap-2"
                         onDragOver={(e) => e.preventDefault()}
@@ -364,8 +365,9 @@ export const TilesExplorer: React.FC = () => {
                 </div>
             </div>
 
-            <div className="h-12 px-4 flex items-center gap-4 shrink-0 border-t border-ui-border-subtle bg-bg-secondary">
-                <MousePointer2 size={14} className="text-text-disabled" />
+            {/* Tile size slider — pinned to bottom */}
+            <div className="h-10 px-4 flex items-center gap-3 shrink-0 border-t border-ui-border-subtle/50 bg-bg-tertiary/40">
+                <span className="text-[9px] font-bold tracking-wider text-text-disabled uppercase whitespace-nowrap">Size</span>
                 <input
                     type="range"
                     min="4"
@@ -373,9 +375,9 @@ export const TilesExplorer: React.FC = () => {
                     step="1"
                     value={tileScale}
                     onChange={(e) => setTileScale(parseInt(e.target.value))}
-                    className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer bg-ui-bg-subtle accent-accent-primary"
+                    className="flex-1 h-1 rounded-full appearance-none cursor-pointer bg-ui-bg-subtle accent-accent-primary"
                 />
-                <span className="text-[10px] font-mono w-6 text-right text-text-disabled font-bold">{tileScale}x</span>
+                <span className="text-[10px] font-mono w-8 text-right text-text-disabled font-bold tabular-nums">{tileScale}x</span>
             </div>
 
             <ContextMenu
