@@ -12,14 +12,17 @@ export const isCFile = (filename: string): boolean => {
  * It looks for arrays defined as `const unsigned char ... [] = { ... }`
  * It attempts to parse the hex values and convert them to Tile objects.
  *
- * Supports both raw index data and GBDK 2bpp planar data.
+ * Supports GBDK 2bpp planar (GB/GBC/Mega Duck) and 4bpp planar (SMS/GG) data.
  */
-export const importCode = (content: string, width: number, height: number): Tile[] => {
+export const importCode = (content: string, width: number, height: number, encoding: '2bpp' | '4bpp' = '2bpp'): Tile[] => {
     const tiles: Tile[] = []
 
     // Regex to find arrays: const unsigned char NAME[] = { DATA };
     // Matches "const unsigned char", optional "BANK(n)", name, "[]", "=", "{", data, "}"
     const arrayRegex = /const\s+unsigned\s+char\s+(?:BANK\(\d+\)\s+)?([a-zA-Z0-9_]+)\[\]\s*=\s*{([^}]+)}/g
+
+    const bitsPerPixel = encoding === '4bpp' ? 4 : 2
+    const bytesPerTile = (width * height * bitsPerPixel) / 8
 
     let match
     while ((match = arrayRegex.exec(content)) !== null) {
@@ -42,25 +45,20 @@ export const importCode = (content: string, width: number, height: number): Tile
 
         if (bytes.length === 0) continue
 
-        // Heuristic: Is this a tile array or map array?
-        // Tiles are usually chunks of 16 bytes (8x8 * 2bpp)
-        // If the array name ends in '_map_...' it's likely a map, skip for now (feature request was for "tiles")
-        // The user said "Import previously generated code files", which export tiles arrays separate from map arrays.
+        // Skip map arrays — only import tile data
         if (name.includes('_map_')) continue
-
-        // Process as tiles
-        // GBDK 2bpp format: 16 bytes per 8x8 tile
-        const bytesPerTile = (width * height * 2) / 8 // Usually 16 bytes for 8x8 2bpp
 
         for (let i = 0; i < bytes.length; i += bytesPerTile) {
             const tileBytes = bytes.slice(i, i + bytesPerTile)
             if (tileBytes.length < bytesPerTile) break // Incomplete tile
 
-            const titleId = `tile-code-${name}-${tiles.length}`
-            const tileData = decodeGbdk2bpp(tileBytes)
+            const tileId = `tile-code-${name}-${tiles.length}`
+            const tileData = encoding === '4bpp'
+                ? decodeGbdk4bpp(tileBytes)
+                : decodeGbdk2bpp(tileBytes)
 
             tiles.push({
-                id: titleId,
+                id: tileId,
                 data: tileData,
                 width: width,
                 height: height
@@ -90,6 +88,34 @@ const decodeGbdk2bpp = (bytes: number[]): number[] => {
             const color = (highBit << 1) | lowBit
 
             pixels[row * 8 + col] = color
+        }
+    }
+
+    return pixels
+}
+
+/**
+ * Decodes GBDK 4bpp planar format back to color indices (0-15)
+ * 32 bytes -> 64 pixels (8x8)
+ * Byte layout: rows of 4 bytes (bitplane0-low, bitplane1-low, bitplane2-low, bitplane3-low)
+ * SMS/GG format: each row = 4 bytes interleaved
+ */
+const decodeGbdk4bpp = (bytes: number[]): number[] => {
+    const pixels = new Array(64).fill(0)
+
+    for (let row = 0; row < 8; row++) {
+        const b0 = bytes[row * 4]
+        const b1 = bytes[row * 4 + 1]
+        const b2 = bytes[row * 4 + 2]
+        const b3 = bytes[row * 4 + 3]
+
+        for (let col = 0; col < 8; col++) {
+            const bit = 7 - col
+            const v = ((b0 >> bit) & 1)
+                | (((b1 >> bit) & 1) << 1)
+                | (((b2 >> bit) & 1) << 2)
+                | (((b3 >> bit) & 1) << 3)
+            pixels[row * 8 + col] = v
         }
     }
 

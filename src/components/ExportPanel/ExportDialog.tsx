@@ -25,8 +25,8 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
 
     const selectedMap = maps.find(m => m.id === selectedMapId)
     const cCode = generateGbdkC(platform, tileset, selectedMap, options)
-    const hCode = generateGbdkH(tileset, selectedMap, options)
-    const binData = generateGbdkBin(tileset)
+    const hCode = generateGbdkH(platform, tileset, selectedMap, options)
+    const binData = generateGbdkBin(platform, tileset)
 
     useEffect(() => {
         if (activeTab === 'png') generatePng()

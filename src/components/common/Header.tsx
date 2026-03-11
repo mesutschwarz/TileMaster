@@ -55,7 +55,7 @@ export const Header: React.FC = () => {
 
         if (isCFile(file.name)) {
             const text = await file.text()
-            const tiles = importCode(text, platform.tileWidth, platform.tileHeight)
+            const tiles = importCode(text, platform.tileWidth, platform.tileHeight, platform.encoding)
             if (tiles.length > 0) {
                 addTiles(tiles, `Tile: Import ${tiles.length}`)
                 selectTile(tiles[0].id)

@@ -25,8 +25,8 @@ export const MapsExplorer: React.FC = () => {
         const newMap = {
             id: `map-${Date.now()}`,
             name: `Map ${maps.length + 1}`,
-            width: platform.mapWidth,
-            height: platform.mapHeight,
+            width: platform.screenTilesX,
+            height: platform.screenTilesY,
             layers: []
         }
         addMap(newMap)

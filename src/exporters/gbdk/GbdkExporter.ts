@@ -12,10 +12,11 @@ export interface GbdkExportOptions {
 const getSafeName = (name: string) => name.replace(/[^a-z0-9]/gi, '_').toLowerCase()
 
 /**
- * Converts tile pixel data to GBDK 2-bit planar format
+ * Converts tile pixel data to GBDK 2bpp planar format (GB/GBC/Mega Duck)
+ * 8x8 tile = 16 bytes (2 bits per pixel, planar)
  */
-export const tileToBinary = (tile: Tile): Uint8Array => {
-    const buffer = new Uint8Array(16) // 8x8 tile = 16 bytes (2 bits per pixel)
+export const tileTo2bpp = (tile: Tile): Uint8Array => {
+    const buffer = new Uint8Array(16)
     for (let row = 0; row < 8; row++) {
         let lowByte = 0
         let highByte = 0
@@ -30,6 +31,36 @@ export const tileToBinary = (tile: Tile): Uint8Array => {
     return buffer
 }
 
+/**
+ * Converts tile pixel data to GBDK 4bpp planar format (SMS/Game Gear)
+ * 8x8 tile = 32 bytes (4 bits per pixel, 4 bitplanes)
+ */
+export const tileTo4bpp = (tile: Tile): Uint8Array => {
+    const buffer = new Uint8Array(32)
+    for (let row = 0; row < 8; row++) {
+        let bp0 = 0, bp1 = 0, bp2 = 0, bp3 = 0
+        for (let col = 0; col < 8; col++) {
+            const colorIndex = tile.data[row * 8 + col] & 0x0f
+            bp0 |= ((colorIndex & 0x01) << (7 - col))
+            bp1 |= (((colorIndex >> 1) & 0x01) << (7 - col))
+            bp2 |= (((colorIndex >> 2) & 0x01) << (7 - col))
+            bp3 |= (((colorIndex >> 3) & 0x01) << (7 - col))
+        }
+        buffer[row * 4] = bp0
+        buffer[row * 4 + 1] = bp1
+        buffer[row * 4 + 2] = bp2
+        buffer[row * 4 + 3] = bp3
+    }
+    return buffer
+}
+
+/**
+ * Encode a tile using the platform's native format
+ */
+export const tileToBinary = (tile: Tile, platform: PlatformSpec): Uint8Array => {
+    return platform.encoding === '4bpp' ? tileTo4bpp(tile) : tileTo2bpp(tile)
+}
+
 export const generateGbdkC = (
     platform: PlatformSpec,
     tileset: Tileset,
@@ -38,17 +69,20 @@ export const generateGbdkC = (
 ): string => {
     const safeName = getSafeName(options.projectName)
     const bankStr = options.useBank !== undefined ? `BANK(${options.useBank}) ` : ''
+    const bytesPerTile = platform.bytesPerTile
 
     let output = `/*
  * GBDK Source Export from TileMaster
  * Project: ${options.projectName}
  * Platform: ${platform.name}
+ * Target:   ${platform.gbdkTarget}
+ * Encoding: ${platform.encoding} (${bytesPerTile} bytes/tile)
  */\n\n`
 
     output += `#include "${safeName}.h"\n\n`
 
     if (options.includeComments) {
-        output += `/* Tileset Data */\n`
+        output += `/* Tileset Data (${platform.encoding}) */\n`
     }
     output += `const unsigned char ${bankStr}${safeName}_tiles[] = {\n`
 
@@ -62,9 +96,9 @@ export const generateGbdkC = (
                 output += `    /* Tile 0x${hexIndex} */\n`
             }
         }
-        const bin = tileToBinary(tile)
-        for (let i = 0; i < 16; i += 2) {
-            output += `    0x${bin[i].toString(16).padStart(2, '0')}, 0x${bin[i + 1].toString(16).padStart(2, '0')}${i === 14 && tileIdx === tileset.tiles.length - 1 ? '' : ','}\n`
+        const bin = tileToBinary(tile, platform)
+        for (let i = 0; i < bytesPerTile; i += 2) {
+            output += `    0x${bin[i].toString(16).padStart(2, '0')}, 0x${bin[i + 1].toString(16).padStart(2, '0')}${i === bytesPerTile - 2 && tileIdx === tileset.tiles.length - 1 ? '' : ','}\n`
         }
     })
 
@@ -98,6 +132,7 @@ export const generateGbdkC = (
 }
 
 export const generateGbdkH = (
+    platform: PlatformSpec,
     tileset: Tileset,
     map: TileMap | undefined,
     options: GbdkExportOptions
@@ -105,12 +140,19 @@ export const generateGbdkH = (
     const safeName = getSafeName(options.projectName)
     const guardName = safeName.toUpperCase() + '_H'
 
-    let output = `/* GBDK Header Export from TileMaster */\n\n`
+    let output = `/* GBDK Header Export from TileMaster */\n`
+    output += `/* Platform: ${platform.name} | Target: ${platform.gbdkTarget} */\n\n`
     output += `#ifndef ${guardName}\n`
     output += `#define ${guardName}\n\n`
 
+    output += `#define ${safeName}_PLATFORM_TARGET "${platform.gbdkTarget}"\n`
+    output += `#define ${safeName}_TILE_W ${platform.tileWidth}\n`
+    output += `#define ${safeName}_TILE_H ${platform.tileHeight}\n`
+    output += `#define ${safeName}_BYTES_PER_TILE ${platform.bytesPerTile}\n\n`
+
     output += `extern const unsigned char ${safeName}_tiles[];\n`
-    output += `#define ${safeName}_tiles_TILE_COUNT ${tileset.tiles.length}\n\n`
+    output += `#define ${safeName}_tiles_TILE_COUNT ${tileset.tiles.length}\n`
+    output += `#define ${safeName}_tiles_SIZE ${tileset.tiles.length * platform.bytesPerTile}\n\n`
 
     if (map) {
         const layersToExport = options.exportAllLayers ? map.layers : [map.layers[0]]
@@ -127,13 +169,14 @@ export const generateGbdkH = (
     return output
 }
 
-export const generateGbdkBin = (tileset: Tileset): Uint8Array => {
-    const totalSize = tileset.tiles.length * 16
+export const generateGbdkBin = (platform: PlatformSpec, tileset: Tileset): Uint8Array => {
+    const bytesPerTile = platform.bytesPerTile
+    const totalSize = tileset.tiles.length * bytesPerTile
     const output = new Uint8Array(totalSize)
 
     tileset.tiles.forEach((tile, idx) => {
-        const bin = tileToBinary(tile)
-        output.set(bin, idx * 16)
+        const bin = tileToBinary(tile, platform)
+        output.set(bin, idx * bytesPerTile)
     })
 
     return output
