@@ -10,7 +10,8 @@ export const SettingsModal: React.FC = () => {
         showSettings, setShowSettings,
         gridSettings, updateGridSettings,
         mapGridSettings, updateMapGridSettings,
-        themeId, setThemeId
+        themeId, setThemeId,
+        resetSettings
     } = useEditorStore()
 
     const [activeTab, setActiveTab] = useState<'tile' | 'map' | 'editor'>('tile')
@@ -58,12 +59,20 @@ export const SettingsModal: React.FC = () => {
             icon={<SettingsIcon size={18} />}
             maxWidth="lg"
             footer={
-                <button
-                    onClick={() => setShowSettings(false)}
-                    className="px-6 py-2 bg-accent-primary hover:bg-accent-secondary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-accent-primary/20"
-                >
-                    Save & Close
-                </button>
+                <div className="flex items-center justify-between w-full">
+                    <button
+                        onClick={resetSettings}
+                        className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-white/10 text-gray-400 hover:text-white hover:border-ui-danger hover:bg-ui-danger/10 transition-all"
+                    >
+                        Reset to Defaults
+                    </button>
+                    <button
+                        onClick={() => setShowSettings(false)}
+                        className="px-6 py-2 bg-accent-primary hover:bg-accent-secondary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-accent-primary/20"
+                    >
+                        Save & Close
+                    </button>
+                </div>
             }
         >
             <div className="flex flex-col">

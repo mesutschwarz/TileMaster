@@ -11,6 +11,52 @@ interface GridSettings {
     color: string
 }
 
+const SETTINGS_KEY = 'tilemaster-settings'
+
+interface PersistedSettings {
+    themeId: string
+    gridSettings: GridSettings
+    mapGridSettings: GridSettings
+    drawingToolbarDock: 'left' | 'right' | 'top' | 'bottom' | 'floating'
+    paletteDock: 'left' | 'right' | 'top' | 'bottom' | 'floating'
+}
+
+const defaultSettings: PersistedSettings = {
+    themeId: getDefaultThemeId(),
+    gridSettings: {
+        enabled: true,
+        size: 1,
+        opacity: 0.1,
+        color: '#ffffff'
+    },
+    mapGridSettings: {
+        enabled: true,
+        size: 8,
+        opacity: 0.15,
+        color: '#ffffff'
+    },
+    drawingToolbarDock: 'left',
+    paletteDock: 'bottom',
+}
+
+function loadSettings(): Partial<PersistedSettings> {
+    try {
+        const raw = localStorage.getItem(SETTINGS_KEY)
+        if (!raw) return {}
+        return JSON.parse(raw)
+    } catch {
+        return {}
+    }
+}
+
+function saveSettings(state: PersistedSettings) {
+    try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(state))
+    } catch { /* storage full or unavailable */ }
+}
+
+const saved = loadSettings()
+
 interface EditorState {
     view: ViewMode
     sidebarView: ViewMode
@@ -72,9 +118,10 @@ interface EditorState {
     setPalettePos: (pos: { x: number, y: number }) => void
     setShowSettings: (show: boolean) => void
     setThemeId: (themeId: string) => void
+    resetSettings: () => void
 }
 
-export const useEditorStore = create<EditorState>((set) => ({
+export const useEditorStore = create<EditorState>((set, get) => ({
     view: 'tile',
     sidebarView: 'tile',
     selectedTool: 'pencil',
@@ -84,7 +131,7 @@ export const useEditorStore = create<EditorState>((set) => ({
     showGrid: true,
     showMapGrid: true,
     sidebarVisible: true,
-    themeId: getDefaultThemeId(),
+    themeId: saved.themeId ?? defaultSettings.themeId,
     selectedLayerId: null,
     selectedCollisionId: 1,
     selectedObjectId: 1,
@@ -94,21 +141,11 @@ export const useEditorStore = create<EditorState>((set) => ({
     mapZoom: 2,
     canvasPan: { x: 0, y: 0 },
 
-    gridSettings: {
-        enabled: true,
-        size: 1,
-        opacity: 0.1,
-        color: '#ffffff'
-    },
-    mapGridSettings: {
-        enabled: true,
-        size: 8, // Represent 8x8 tiles by default
-        opacity: 0.15,
-        color: '#ffffff'
-    },
+    gridSettings: saved.gridSettings ?? { ...defaultSettings.gridSettings },
+    mapGridSettings: saved.mapGridSettings ?? { ...defaultSettings.mapGridSettings },
 
-    drawingToolbarDock: 'left',
-    paletteDock: 'bottom',
+    drawingToolbarDock: saved.drawingToolbarDock ?? defaultSettings.drawingToolbarDock,
+    paletteDock: saved.paletteDock ?? defaultSettings.paletteDock,
     drawingToolbarPos: { x: 20, y: 20 },
     palettePos: { x: 20, y: 100 },
 
@@ -132,16 +169,30 @@ export const useEditorStore = create<EditorState>((set) => ({
 
     setCanvasScale: (canvasScale) => set({ canvasScale }),
     setCanvasPan: (canvasPan) => set({ canvasPan }),
-    updateGridSettings: (settings) => set((state) => ({
-        gridSettings: { ...state.gridSettings, ...settings }
-    })),
-    updateMapGridSettings: (settings) => set((state) => ({
-        mapGridSettings: { ...state.mapGridSettings, ...settings }
-    })),
-    setDrawingToolbarDock: (drawingToolbarDock) => set({ drawingToolbarDock }),
-    setPaletteDock: (paletteDock) => set({ paletteDock }),
+    updateGridSettings: (settings) => set((state) => {
+        const gridSettings = { ...state.gridSettings, ...settings }
+        saveSettings({ themeId: state.themeId, gridSettings, mapGridSettings: state.mapGridSettings, drawingToolbarDock: state.drawingToolbarDock, paletteDock: state.paletteDock })
+        return { gridSettings }
+    }),
+    updateMapGridSettings: (settings) => set((state) => {
+        const mapGridSettings = { ...state.mapGridSettings, ...settings }
+        saveSettings({ themeId: state.themeId, gridSettings: state.gridSettings, mapGridSettings, drawingToolbarDock: state.drawingToolbarDock, paletteDock: state.paletteDock })
+        return { mapGridSettings }
+    }),
+    setDrawingToolbarDock: (drawingToolbarDock) => { const s = get(); saveSettings({ themeId: s.themeId, gridSettings: s.gridSettings, mapGridSettings: s.mapGridSettings, drawingToolbarDock, paletteDock: s.paletteDock }); set({ drawingToolbarDock }) },
+    setPaletteDock: (paletteDock) => { const s = get(); saveSettings({ themeId: s.themeId, gridSettings: s.gridSettings, mapGridSettings: s.mapGridSettings, drawingToolbarDock: s.drawingToolbarDock, paletteDock }); set({ paletteDock }) },
     setDrawingToolbarPos: (drawingToolbarPos) => set({ drawingToolbarPos }),
     setPalettePos: (palettePos) => set({ palettePos }),
     setShowSettings: (showSettings) => set({ showSettings }),
-    setThemeId: (themeId) => set({ themeId })
+    setThemeId: (themeId) => { const s = get(); saveSettings({ themeId, gridSettings: s.gridSettings, mapGridSettings: s.mapGridSettings, drawingToolbarDock: s.drawingToolbarDock, paletteDock: s.paletteDock }); set({ themeId }) },
+    resetSettings: () => {
+        saveSettings(defaultSettings)
+        set({
+            themeId: defaultSettings.themeId,
+            gridSettings: { ...defaultSettings.gridSettings },
+            mapGridSettings: { ...defaultSettings.mapGridSettings },
+            drawingToolbarDock: defaultSettings.drawingToolbarDock,
+            paletteDock: defaultSettings.paletteDock,
+        })
+    }
 }))
