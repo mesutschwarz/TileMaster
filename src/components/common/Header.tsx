@@ -7,7 +7,7 @@ import { ExportDialog } from '../ExportPanel/ExportDialog'
 import { OnboardingModal } from '../common/OnboardingModal'
 import { ImportPreviewDialog } from '../ImportPanel/ImportPreviewDialog'
 import { FolderInput } from 'lucide-react'
-import { isCFile, importCode } from '../../importers/codeImporter'
+import { isCFile, importCode, CodeImportResult } from '../../importers/codeImporter'
 
 import { useEditorStore } from '../../stores/editorStore'
 import { themeEntries } from '../../theme/themeRegistry'
@@ -20,6 +20,7 @@ export const Header: React.FC = () => {
     const [showExport, setShowExport] = useState(false)
     const [showHelp, setShowHelp] = useState(false)
     const [importFile, setImportFile] = useState<File | null>(null)
+    const [codeImportData, setCodeImportData] = useState<{ result: CodeImportResult; fileName: string } | null>(null)
     const [showPlatformMenu, setShowPlatformMenu] = useState(false)
     const fileInputRef = React.useRef<HTMLInputElement>(null)
     const platformMenuRef = React.useRef<HTMLDivElement>(null)
@@ -56,42 +57,46 @@ export const Header: React.FC = () => {
         if (isCFile(file.name)) {
             const text = await file.text()
             const result = importCode(text, platform.tileWidth, platform.tileHeight, platform.encoding)
-            const { tiles, maps } = result
 
-            if (tiles.length === 0 && maps.length === 0) {
+            if (result.tiles.length === 0 && result.maps.length === 0) {
                 alert('No valid tile or map data found in file.')
                 if (fileInputRef.current) fileInputRef.current.value = ''
                 return
             }
 
-            if (tiles.length > 0) {
-                addTiles(tiles, `Tile: Import ${tiles.length}`)
-                selectTile(tiles[0].id)
-            }
-
-            const { addMap, selectMap } = useProjectStore.getState()
-            for (const map of maps) {
-                addMap(map)
-                selectMap(map.id)
-            }
-
-            if (maps.length > 0) {
-                setView('map')
-            } else {
-                setView('tile')
-            }
-
-            const parts: string[] = []
-            if (tiles.length > 0) parts.push(`${tiles.length} tiles`)
-            if (maps.length > 0) parts.push(`${maps.length} map(s)`)
-            alert(`Imported ${parts.join(' and ')} from code file.`)
-
-            // Reset input
+            setCodeImportData({ result, fileName: file.name })
             if (fileInputRef.current) fileInputRef.current.value = ''
         } else {
             // Assume image, open preview dialog
             setImportFile(file)
         }
+    }
+
+    const handleCodeImportConfirm = (result: CodeImportResult, cleanup: boolean) => {
+        const { tiles, maps } = result
+
+        if (tiles.length > 0) {
+            addTiles(tiles, `Tile: Import ${tiles.length}`)
+            selectTile(tiles[0].id)
+        }
+
+        const { addMap, selectMap } = useProjectStore.getState()
+        for (const map of maps) {
+            addMap(map)
+            selectMap(map.id)
+        }
+
+        if (cleanup) {
+            cleanupTiles('Tiles: Cleanup')
+        }
+
+        if (maps.length > 0) {
+            setView('map')
+        } else {
+            setView('tile')
+        }
+
+        setCodeImportData(null)
     }
 
     const handleImportConfirm = (result: ImportResult, options: ImportOptions) => {
@@ -141,6 +146,7 @@ export const Header: React.FC = () => {
             {showHelp && <OnboardingModal onForceClose={() => setShowHelp(false)} forceOpen={true} />}
             {importFile && (
                 <ImportPreviewDialog
+                    mode="png"
                     file={importFile}
                     platform={platform}
                     onImport={handleImportConfirm}
@@ -148,6 +154,16 @@ export const Header: React.FC = () => {
                         setImportFile(null)
                         if (fileInputRef.current) fileInputRef.current.value = ''
                     }}
+                />
+            )}
+            {codeImportData && (
+                <ImportPreviewDialog
+                    mode="code"
+                    codeResult={codeImportData.result}
+                    fileName={codeImportData.fileName}
+                    platform={platform}
+                    onImportCode={handleCodeImportConfirm}
+                    onCancel={() => setCodeImportData(null)}
                 />
             )}
 
