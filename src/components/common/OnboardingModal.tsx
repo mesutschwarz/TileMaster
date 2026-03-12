@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Grid, Map, Monitor, Zap, Play, ChevronRight } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Modal } from './Modal'
+import { APP_NAME, STORAGE_KEYS } from '../../app.config'
 
 export const OnboardingModal: React.FC<{ forceOpen?: boolean, onForceClose?: () => void }> = ({ forceOpen, onForceClose }) => {
     const [isOpen, setIsOpen] = useState(false)
@@ -12,7 +13,7 @@ export const OnboardingModal: React.FC<{ forceOpen?: boolean, onForceClose?: () 
             setIsOpen(true)
             return
         }
-        const hasSeenOnboarding = localStorage.getItem('tilemaster_onboarding_v1')
+        const hasSeenOnboarding = localStorage.getItem(STORAGE_KEYS.onboarding)
         if (!hasSeenOnboarding) {
             setIsOpen(true)
         }
@@ -22,14 +23,14 @@ export const OnboardingModal: React.FC<{ forceOpen?: boolean, onForceClose?: () 
         if (onForceClose) {
             onForceClose()
         } else {
-            localStorage.setItem('tilemaster_onboarding_v1', 'true')
+            localStorage.setItem(STORAGE_KEYS.onboarding, 'true')
         }
         setIsOpen(false)
     }
 
     const steps = [
         {
-            title: "Welcome to TileMaster Beta",
+            title: `Welcome to ${APP_NAME} Beta`,
             description: "The professional asset editor for retro game developers. Let's get you oriented in 30 seconds.",
             icon: Zap,
             color: "text-accent-primary",

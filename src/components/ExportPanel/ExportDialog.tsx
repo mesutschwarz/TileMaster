@@ -5,6 +5,7 @@ import { generateGbdkC, generateGbdkH, generateGbdkBin, GbdkExportOptions } from
 import { exportTilesetToPng, exportMapToPng } from '../../exporters/png/PngExporter'
 import { clsx } from 'clsx'
 import { Modal } from '../common/Modal'
+import { DEFAULT_EXPORT_PROJECT_NAME } from '../../app.config'
 
 type ExportTab = 'c' | 'h' | 'bin' | 'png'
 
@@ -17,7 +18,7 @@ export const ExportDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => 
     const [pngTarget, setPngTarget] = useState<'tileset' | 'map'>('tileset')
 
     const [options, setOptions] = useState<GbdkExportOptions>({
-        projectName: 'tilemaster_assets',
+        projectName: DEFAULT_EXPORT_PROJECT_NAME,
         includeComments: true,
         exportAllLayers: true,
         useBank: undefined

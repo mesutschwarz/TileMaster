@@ -3,8 +3,9 @@ import { PlatformId, PlatformSpec } from '../types/platform'
 import { Tile, Tileset } from '../types/tile'
 import { TileMap, MapLayer, LayerType } from '../types/map'
 import { PLATFORMS } from '../core/platforms'
+import { STORAGE_KEYS } from '../app.config'
 
-const PLATFORM_KEY = 'tilemaster-platform'
+const PLATFORM_KEY = STORAGE_KEYS.platform
 
 function loadPlatformId(): PlatformId {
     try {

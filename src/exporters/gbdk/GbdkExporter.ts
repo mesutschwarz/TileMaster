@@ -1,6 +1,7 @@
 import { PlatformSpec } from '../../types/platform'
 import { Tileset, Tile } from '../../types/tile'
 import { TileMap } from '../../types/map'
+import { APP_NAME } from '../../app.config'
 
 export interface GbdkExportOptions {
     projectName: string
@@ -72,7 +73,7 @@ export const generateGbdkC = (
     const bytesPerTile = platform.bytesPerTile
 
     let output = `/*
- * GBDK Source Export from TileMaster
+ * GBDK Source Export from ${APP_NAME}
  * Project: ${options.projectName}
  * Platform: ${platform.name}
  * Target:   ${platform.gbdkTarget}
@@ -140,7 +141,7 @@ export const generateGbdkH = (
     const safeName = getSafeName(options.projectName)
     const guardName = safeName.toUpperCase() + '_H'
 
-    let output = `/* GBDK Header Export from TileMaster */\n`
+    let output = `/* GBDK Header Export from ${APP_NAME} */\n`
     output += `/* Platform: ${platform.name} | Target: ${platform.gbdkTarget} */\n\n`
     output += `#ifndef ${guardName}\n`
     output += `#define ${guardName}\n\n`

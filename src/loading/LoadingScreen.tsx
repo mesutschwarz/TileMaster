@@ -6,19 +6,25 @@
  * progress simulation completes.
  *
  * ── Customisation ────────────────────────────────────────────────────
- *  • Timing / stages  →  useLoadingProgress.ts
- *  • Animations / CSS →  loading.css
- *  • Layout / copy    →  this file, sections marked "EDIT"
+ *  • App name / tagline / version  →  src/app.config.ts
+ *  • Logo SVG mark                 →  src/assets/AppLogo.tsx
+ *  • Wordmark text component       →  src/assets/AppWordmark.tsx
+ *  • Timing / stages               →  loading/useLoadingProgress.ts
+ *  • Animations / CSS              →  loading/loading.css
+ *  • Sizes / spacing below         →  constants in this file
  * ──────────────────────────────────────────────────────────────────── */
 
 import React from 'react'
 import { useLoadingProgress, getStageLabel } from './useLoadingProgress'
+import { AppLogo } from '../assets/AppLogo'
+import { AppWordmark } from '../assets/AppWordmark'
+import { APP_TAGLINE, APP_VERSION } from '../app.config'
 import './loading.css'
 
-// ─── EDIT: Configure sizes and spacing ───────────────────────────────
-const LOGO_SIZE = 72   // px — width & height of the SVG icon
+// ─── Layout constants (edit here to adjust sizes / spacing) ──────────
+const LOGO_SIZE = 72   // px — width & height of the logo mark
 const PROGRESS_WIDTH = 220  // px — width of the progress bar
-const GAP = 36   // px — vertical gap between logo, wordmark, bar
+const GAP = 36   // px — vertical gap between sections
 // ─────────────────────────────────────────────────────────────────────
 
 interface LoadingScreenProps {
@@ -39,28 +45,17 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
                     userSelect: 'none',
                 }}
             >
-                {/* ── Logo Icon ───────────────────────────── */}
-                {/* EDIT: swap this for an <img> or different SVG as needed */}
+                {/* ── Logo ────────────────────────────────── */}
                 <div className={`ls-icon${isExiting ? '' : ' ls-floating'}`}>
-                    <TileMasterIcon size={LOGO_SIZE} />
+                    <AppLogo size={LOGO_SIZE} label="TileMaster logo" className="ls-tile" />
                 </div>
 
                 {/* ── Wordmark & Subtitle ─────────────────── */}
                 <div style={{ textAlign: 'center' }}>
-                    {/* EDIT: app name copy */}
-                    <h1 className="ls-wordmark" style={{
-                        margin: 0,
-                        lineHeight: 1,
-                        fontSize: '28px',
-                        fontWeight: 800,
-                        letterSpacing: '-0.025em',
-                        color: 'var(--text-primary)',
-                        fontFamily: 'inherit',
-                    }}>
-                        Tile<span style={{ color: 'var(--accent-primary)' }}>Master</span>
+                    <h1 className="ls-wordmark" style={{ margin: 0 }}>
+                        <AppWordmark fontSize="28px" fontWeight={800} letterSpacing="-0.025em" />
                     </h1>
 
-                    {/* EDIT: tagline copy */}
                     <p className="ls-subtitle" style={{
                         margin: '10px 0 0',
                         fontSize: '10px',
@@ -69,7 +64,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
                         textTransform: 'uppercase',
                         color: 'var(--text-secondary)',
                     }}>
-                        Professional Retro Tile Designer
+                        {APP_TAGLINE}
                     </p>
                 </div>
 
@@ -93,75 +88,28 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
                         color: 'var(--text-disabled)',
                         textAlign: 'center',
                         fontWeight: 500,
-                        height: '14px',           /* prevent layout shift */
+                        height: '14px',
                         transition: 'opacity 0.2s ease',
                     }}>
                         {getStageLabel(progress)}
                     </p>
                 </div>
+
+                {/* ── Version badge ────────────────────────── */}
+                <p style={{
+                    position: 'absolute',
+                    bottom: '24px',
+                    margin: 0,
+                    fontSize: '9px',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-disabled)',
+                    fontWeight: 500,
+                    opacity: 0.6,
+                }}>
+                    v{APP_VERSION}
+                </p>
             </div>
         </div>
-    )
-}
-
-// ─── TileMaster Logo Icon ─────────────────────────────────────────────
-// A 3 × 3 tilemap grid that visualises the app's core concept.
-// Each rect is a "tile" with an independently animated stagger (see
-// .ls-tile:nth-child rules in loading.css) and a distinct opacity to
-// suggest varied tile types — matching the accent colour palette.
-//
-// EDIT: Swap out for your own SVG mark if you add a brand asset later.
-// ─────────────────────────────────────────────────────────────────────
-
-const TILE_SIZE = 20   // px
-const TILE_RADIUS = 4    // px border-radius
-const TILE_GAP = 4    // px gap between tiles
-const STEP = TILE_SIZE + TILE_GAP   // 24 px
-
-// [opacity, use accent-secondary?]  — one entry per tile, row-major
-const TILE_MAP: [number, boolean][] = [
-    [1.00, false], [0.55, false], [0.80, true],
-    [0.40, false], [1.00, false], [0.50, false],
-    [0.65, true], [0.30, false], [0.85, false],
-]
-
-interface TileMasterIconProps {
-    size: number
-}
-
-const TileMasterIcon: React.FC<TileMasterIconProps> = ({ size }) => {
-    const viewBox = STEP * 3 - TILE_GAP   // 68
-
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox={`0 0 ${viewBox} ${viewBox}`}
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-        >
-            {TILE_MAP.map(([opacity, isSecondary], i) => {
-                const col = i % 3
-                const row = Math.floor(i / 3)
-                return (
-                    <rect
-                        key={i}
-                        className="ls-tile"
-                        x={col * STEP}
-                        y={row * STEP}
-                        width={TILE_SIZE}
-                        height={TILE_SIZE}
-                        rx={TILE_RADIUS}
-                        opacity={opacity}
-                        style={{
-                            fill: isSecondary
-                                ? 'var(--accent-secondary, #8b5cf6)'
-                                : 'var(--accent-primary,   #ec4899)',
-                        }}
-                    />
-                )
-            })}
-        </svg>
     )
 }

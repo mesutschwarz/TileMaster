@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
-import { Monitor, ChevronDown, Share2, HelpCircle, Settings as SettingsIcon, Save, FolderOpen } from 'lucide-react'
+import { ChevronDown, Share2, HelpCircle, Settings as SettingsIcon, Save, FolderOpen } from 'lucide-react'
 import { useProjectStore } from '../../stores/projectStore'
 import { PLATFORMS } from '../../core/platforms'
+import { AppLogo } from '../../assets/AppLogo'
+import { AppWordmark } from '../../assets/AppWordmark'
 import { PlatformId } from '../../types/platform'
 import { ExportDialog } from '../ExportPanel/ExportDialog'
 import { OnboardingModal } from '../common/OnboardingModal'
@@ -210,11 +212,9 @@ export const Header: React.FC = () => {
             />
 
             <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded bg-accent-primary flex items-center justify-center">
-                    <Monitor className="w-4 h-4 text-white" />
-                </div>
-                <h1 className="text-sm font-bold tracking-[0.2em] text-white uppercase">
-                    Tile<span className="text-accent-primary">Master</span>
+                <AppLogo size={28} />
+                <h1 style={{ margin: 0 }}>
+                    <AppWordmark fontSize="13px" fontWeight={800} letterSpacing="0.18em" style={{ textTransform: 'uppercase' }} />
                 </h1>
             </div>
 

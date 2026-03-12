@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 import { applyThemeById } from './theme/themeApplier'
+import { APP_TITLE, STORAGE_KEYS } from './app.config'
+
+document.title = APP_TITLE
 
 // Apply the persisted theme before the first render so the loading screen
 // CSS variables resolve immediately (avoids a flash of unstyled content).
 try {
-    const raw = localStorage.getItem('tilemaster-settings')
+    const raw = localStorage.getItem(STORAGE_KEYS.settings)
     if (raw) {
         const { themeId } = JSON.parse(raw) as { themeId?: string }
         if (themeId) applyThemeById(themeId)

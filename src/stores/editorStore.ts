@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { getDefaultThemeId } from '../theme/themeRegistry'
+import { STORAGE_KEYS } from '../app.config'
 
 export type ToolId = 'pencil' | 'eraser' | 'fill' | 'picker' | 'line' | 'rect' | 'circle' | 'select'
 export type ViewMode = 'tile' | 'map'
@@ -11,7 +12,7 @@ interface GridSettings {
     color: string
 }
 
-const SETTINGS_KEY = 'tilemaster-settings'
+const SETTINGS_KEY = STORAGE_KEYS.settings
 
 interface PersistedSettings {
     themeId: string
