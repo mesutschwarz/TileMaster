@@ -63,6 +63,7 @@ export const applyThemeById = (themeId: string) => {
     const { colors } = theme
 
     setCssVar('--app-background', colors.appBackground)
+    setCssVar('--panel-surface', colors.panelSurface ?? colors.bgPrimary)
     setCssVar('--bg-primary', colors.bgPrimary)
     setCssVar('--bg-secondary', colors.bgSecondary)
     setCssVar('--bg-tertiary', colors.bgTertiary)

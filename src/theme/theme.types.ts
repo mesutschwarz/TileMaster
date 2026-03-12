@@ -2,6 +2,7 @@ export type ThemeType = 'dark' | 'light'
 
 export interface AppThemeColors {
     appBackground: string
+    panelSurface?: string
     bgPrimary: string
     bgSecondary: string
     bgTertiary: string

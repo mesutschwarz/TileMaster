@@ -138,5 +138,40 @@ export const THEME_PRESETS: AppTheme[] = [
             success: '#22c55e',
             info: '#14b8a6',
         }
+    },
+    {
+        id: 'milkyway',
+        label: 'Milkyway (Light)',
+        type: 'light',
+        colors: {
+            appBackground: 'radial-gradient(circle at 12% 18%, rgba(255, 189, 89, 0.45) 0%, transparent 38%), radial-gradient(circle at 85% 22%, rgba(125, 211, 252, 0.42) 0%, transparent 40%), radial-gradient(circle at 70% 86%, rgba(244, 114, 182, 0.26) 0%, transparent 45%), radial-gradient(circle at 28% 78%, rgba(192, 132, 252, 0.20) 0%, transparent 44%), linear-gradient(160deg, #fffaf2 0%, #fff4e9 52%, #fef6ff 100%)',
+            panelSurface: 'linear-gradient(145deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 244, 229, 0.82) 55%, rgba(242, 250, 255, 0.84) 100%)',
+            bgPrimary: 'rgba(255, 255, 255, 0.72)',
+            bgSecondary: 'rgba(255, 250, 244, 0.88)',
+            bgTertiary: 'rgba(255, 245, 236, 0.93)',
+            bgTitlebar: 'rgba(255, 251, 247, 0.78)',
+            bgActivitybar: 'transparent',
+            bgStatusbar: 'rgba(255, 248, 241, 0.78)',
+
+            accentPrimary: '#fb7185',
+            accentSecondary: '#38bdf8',
+
+            textPrimary: '#3f2c24',
+            textSecondary: '#7c5b4c',
+            textDisabled: '#b48f7f',
+
+            uiBgHover: 'rgba(251, 113, 133, 0.09)',
+            uiBgHoverStrong: 'rgba(251, 113, 133, 0.16)',
+            uiBgSubtle: 'rgba(255, 255, 255, 0.58)',
+            uiInputBg: 'rgba(255, 255, 255, 0.94)',
+            uiInputBorder: 'rgba(251, 146, 60, 0.26)',
+            uiBorderSubtle: 'rgba(248, 113, 113, 0.18)',
+            uiBorderStrong: 'rgba(56, 189, 248, 0.36)',
+
+            danger: '#ef4444',
+            warning: '#f59e0b',
+            success: '#10b981',
+            info: '#0ea5e9',
+        }
     }
 ]
