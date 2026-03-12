@@ -30,7 +30,7 @@ export const OnboardingModal: React.FC<{ forceOpen?: boolean, onForceClose?: () 
 
     const steps = [
         {
-            title: `Welcome to ${APP_NAME} Beta`,
+            title: `Welcome to ${APP_NAME}`,
             description: "The professional asset editor for retro game developers. Let's get you oriented in 30 seconds.",
             icon: Zap,
             color: "text-accent-primary",
