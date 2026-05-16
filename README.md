@@ -1,6 +1,6 @@
-# TileMaster Beta (New GUI) Big Update
+# TileMaster Beta (New GUI)
 
-https://mesutschwarz.github.io/TileMasterBeta/
+https://mesutschwarz.github.io/TileMaster/
 
 TileMaster Beta is a modern, browser-based pixel tile and tilemap editor focused on retro workflows.
 
