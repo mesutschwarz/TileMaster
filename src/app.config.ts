@@ -21,15 +21,15 @@ import pkg from '../package.json'
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 /** Full display name of the application. */
-export const APP_NAME = 'TileMaster'
+export const APP_NAME = 'DileMazter'
 
 /**
  * Name split into two parts for the two-tone wordmark rendering.
  * The wordmark renders PART1 in the primary text colour and PART2
  * in the accent colour.
  */
-export const APP_NAME_PART1 = 'Tile'
-export const APP_NAME_PART2 = 'Master'
+export const APP_NAME_PART1 = 'Dile'
+export const APP_NAME_PART2 = 'Mazter'
 
 // ── Tagline & version ─────────────────────────────────────────────────────────
 
